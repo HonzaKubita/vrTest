@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+
 import * as physics from '../physics/physics';
 import * as render from '../render/render';
+
 import WorldObject from './worldObject';
 import Cube from './objects/cube';
+import Hand from './objects/hand';
 
 export let objects = [];
 
@@ -12,43 +15,15 @@ export let controller0 = null;
 export let controller1 = null;
 
 function setupHands() {
-    // Get controller objects
-    controller0 = render.renderer.xr.getController(0);
-    controller1 = render.renderer.xr.getController(1);
+    const leftHand = new Hand(0, "left");
+    leftHand.addToScene(render.scene);
+    leftHand.addToWorld(physics.world);
+    objects.push(leftHand);
 
-    // Add controllers to scene
-    render.scene.add(controller0);
-    render.scene.add(controller1);
-
-    // Rotate the hands (dialed in for Meta Quest 3)
-    // Left hand
-    render.models["robotic_hand_left"].rotation.x = -(Math.PI / 2);
-
-    render.models["robotic_hand_left"].position.x = -0.025;
-    render.models["robotic_hand_left"].position.y = -0.04;
-    render.models["robotic_hand_left"].position.z = 0.14;
-
-    // Right hand
-    render.models["robotic_hand_right"].rotation.x = -(Math.PI / 2);
-
-    render.models["robotic_hand_right"].position.x = 0.025;
-    render.models["robotic_hand_right"].position.y = -0.04;
-    render.models["robotic_hand_right"].position.z = 0.14;
-
-    // Add hand models to controllers
-    controller0.add(render.models["robotic_hand_left"]);
-    controller1.add(render.models["robotic_hand_right"]);
-
-    // Create worldObjects for hands
-    // const controllerLeftBox = new Cube([0.1, 0.1, 0.1]);
-    // controllerLeftBox.addToScene(controller0);
-    // controllerLeftBox.addToWorld(physics.world);
-    // objects.push(controllerLeftBox);
-
-    // const controllerRightBox = new Cube([0.1, 0.1, 0.1]);
-    // controllerRightBox.addToScene(controller1);
-    // controllerRightBox.addToWorld(physics.world);
-    // objects.push(controllerRightBox);
+    const rightHand = new Hand(1, "right");
+    rightHand.addToScene(render.scene);
+    rightHand.addToWorld(physics.world);
+    objects.push(rightHand);
 }
 
 function setupBaseObjects() {
@@ -61,8 +36,9 @@ function setupBaseObjects() {
     groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(100, 100);
     const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
-    const groundGeometry = new THREE.BoxGeometry(50, 0.1, 50);
+    const groundGeometry = new THREE.PlaneGeometry(50, 50);
     const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+    groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.receiveShadow = true;
 
     // Ground - CANNON
@@ -73,6 +49,7 @@ function setupBaseObjects() {
     groundCANNONObject.quaternion.setFromEuler(-Math.PI / 2, 0, 0) // make it face up
 
     const groundObject = new WorldObject(groundCANNONObject, groundMesh);
+    groundObject.enableQuaternionCopy = false;
     groundObject.addToScene(render.scene);
     groundObject.addToWorld(physics.world);
 }

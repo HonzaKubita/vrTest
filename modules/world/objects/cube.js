@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
-import WorldObject from "../worldObject";
+import PhysObject from "./physObject";
 
-export default class Cube extends WorldObject {
+export default class Cube extends PhysObject {
     constructor(size, staticObject=false) {
         // Create CANNON object
         const cannonObject = new CANNON.Body({
