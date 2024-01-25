@@ -1,11 +1,14 @@
 import * as CANNON from "cannon-es";
 import * as THREE from "three";
 import * as render from "../../render/render";
+import * as physics from "../../physics/physics";
+import objects from "../worldObjects";
 import WorldObject from "../templates/worldObject";
 import PhysObject from "../templates/physObject";
 
 const hitBoxSize = [0.05, 0.1, 0.2];
-const hitBoxDebug = true;
+const hitBoxDebug = false;
+const grabPointDebug = false;
 
 export default class Hand extends WorldObject {
     constructor(controllerIndex, side) {
@@ -19,15 +22,46 @@ export default class Hand extends WorldObject {
         this.controller = controller;
 
         // Add hand models to controllers
-        if (this.side == "left")
-            this.controller.add(render.models["robotic_hand_left"]);
+        if (this.side == "left") 
+            this.controller.add(render.models["hand"]);
         else if (this.side == "right")
-            this.controller.add(render.models["robotic_hand_right"]);
-
+            this.controller.add(render.models["hand2"]);
+        
+        this.correctHandModel();
         this.createHitbox();
-        this.createGrabJoint();
+        this.createGrabPoint();
 
-        if (hitBoxDebug) this.enableDebug();
+        // Register event listeners for grabbing
+        this.controller.addEventListener("selectstart", (event) => {
+            this.onGrab();
+        });
+        this.controller.addEventListener("selectend", (event) => {
+            this.onRelease();
+        });
+        this.grabbing = false;
+
+        this.debug();
+    }
+
+    correctHandModel() {
+        console.log(render.models["hand"]);
+        if (this.side == "left")
+            render.models["hand"].applyMatrix4(new THREE.Matrix4().makeScale(-1, 1, 1));
+
+        // Rotate the hands (dialed in for Meta Quest 3)
+        // Left hand
+        render.models["hand"].rotation.x = -(Math.PI / 2);
+
+        render.models["hand"].position.x = -0.025;
+        render.models["hand"].position.y = -0.04;
+        render.models["hand"].position.z = 0.14;
+
+        // Right hand
+        render.models["hand2"].rotation.x = -(Math.PI / 2);
+
+        render.models["hand2"].position.x = 0.025;
+        render.models["hand2"].position.y = -0.04;
+        render.models["hand2"].position.z = 0.14;
     }
 
     createHitbox() {
@@ -88,38 +122,98 @@ export default class Hand extends WorldObject {
         };
     }
 
-    createGrabJoint() {
-        // Create item attach joint
-        const cannonJoint = new CANNON.Body({
+    createGrabPoint() {
+        // Connection diagram
+        //   three          three         cannon           cannon      grabbableItem
+        // controller -> (grabPoint -> grabPointBody) -> constraint -> item
+
+        // Create grabPoint
+        const grabPointGeometry = new THREE.SphereGeometry(0.02, 32, 32);
+        const debugMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const grabPointMesh = new THREE.Mesh(grabPointGeometry, debugMaterial);
+        // Hide the mesh
+        grabPointMesh.visible = false;
+        // Align the position with the hand model
+        grabPointMesh.position.x = this.side == "left" ? 0.04 : -0.04;
+        grabPointMesh.position.y = -0.04;
+        grabPointMesh.position.z = 0.05;
+        // Add grabPoint to controller
+        this.controller.add(grabPointMesh);
+
+        const grabPointBody = new CANNON.Body({
             mass: 0,
             shape: new CANNON.Sphere(1),
         });
+        grabPointBody.collisionFilterGroup = 0
+        grabPointBody.collisionFilterMask = 0
 
-        const grabJointGeometry = new THREE.SphereGeometry(0.02, 32, 32);
-        const debugMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        const grabJointMesh = new THREE.Mesh(grabJointGeometry, debugMaterial);
+        // Create physObject for grabPoint and grabPointBody
+        const grabPointObject = new PhysObject(grabPointBody, grabPointMesh, "three");
 
-        // Hide the mesh
-        grabJointMesh.visible = false;
-
-        // Align the position with the hand model
-        grabJointMesh.position.x = this.side == "left" ? 0.04 : -0.04;
-        grabJointMesh.position.y = -0.04;
-        grabJointMesh.position.z = 0.05;
-
-        // Add grabJoint to controller
-        this.controller.add(grabJointMesh);
-
-        // Create grabJoint object
-        this.grabJoint = {
-            cannonJoint: cannonJoint,
-            threeMesh: grabJointMesh
-        }
+        this.grabPoint = {
+            grabPointObject: grabPointObject,
+            grabPointConstraint: null
+        };
     }
 
-    enableDebug() {
-        this.hitbox.hitboxObject.threeMesh.visible = true;
-        this.grabJoint.threeMesh.visible = true;
+    onGrab() {
+        if (this.grabbing) return;
+        console.log("grab");
+        this.grabbing = true;
+        // Find the nearest grabbable object
+
+        let toGrab = objects[0];
+        let foundObject = false;
+        let lastDistance = 1000;
+
+        for (const object of objects) {
+            if (!object.isGrabbable) continue; // Not grabbable
+
+            console.log("Found grabbable object");
+            
+            const distance = 
+                object.threeMesh.getWorldPosition(new THREE.Vector3())
+                .distanceTo(
+                    this.grabPoint.grabPointObject.threeMesh.getWorldPosition(new THREE.Vector3())
+                );
+
+            console.log(distance);
+
+            if (distance > 0.3) continue; // Too far away
+
+            if (distance < lastDistance) {
+                console.log("found grab candidate");
+                lastDistance = distance;
+                foundObject = true;
+                toGrab = object;
+            }
+        }
+
+        if (!foundObject) {
+            console.log("no object to grab");
+            return;
+        };
+
+        console.log(`grabbing: `, toGrab);
+
+        // Create constraint between grabPointBody and toGrab
+        const constraint = new CANNON.LockConstraint(this.grabPoint.grabPointObject.cannonBody, toGrab.cannonBody);
+        physics.world.addConstraint(constraint);
+        this.grabPoint.grabPointConstraint = constraint;
+    }
+
+    onRelease() {
+        console.log("release");
+        this.grabbing = false;
+        physics.world.removeConstraint(this.grabPoint.grabPointConstraint);
+        this.grabPoint.grabPointConstraint = null;
+    }
+
+    debug() {
+        if (hitBoxDebug)
+            this.hitbox.hitboxObject.threeMesh.visible = true;
+        if (grabPointDebug)
+            this.grabPoint.grabPointObject.threeMesh.visible = true;
     }
 
     // override update method
@@ -129,7 +223,11 @@ export default class Hand extends WorldObject {
         this.hitbox.hitboxObject.update();
         this.hitbox.cannonConstraint.update();
 
-        // Update grabJoint position based on controller position
+        // Update grabPoint position based on controller position
+        this.grabPoint.grabPointObject.update();
+        if (this.grabPoint.grabPointConstraint) {
+            this.grabPoint.grabPointConstraint.update();
+        }
     }
 
     // override addToWorld method

@@ -2,8 +2,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // Models
 const models = {
-    "robotic_hand_left": "/assets/models/robotic_hand_left.glb",
-    "robotic_hand_right": "/assets/models/robotic_hand_right.glb"
+    "hand": "/assets/models/hand.glb",
+    "hand2": "/assets/models/hand.glb",
 }
 
 const loader = new GLTFLoader();

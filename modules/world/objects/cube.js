@@ -26,5 +26,7 @@ export default class Cube extends PhysObject {
 
         // Call super constructor
         super(cannonBody, mesh);
+
+        this.isGrabbable = !staticObject;
     }
 }

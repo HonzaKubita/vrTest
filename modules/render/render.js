@@ -43,19 +43,4 @@ export async function init() {
 
     // Load custom models
     models = await loadAll();
-
-    // Rotate the hands (dialed in for Meta Quest 3)
-    // Left hand
-    models["robotic_hand_left"].rotation.x = -(Math.PI / 2);
-
-    models["robotic_hand_left"].position.x = -0.025;
-    models["robotic_hand_left"].position.y = -0.04;
-    models["robotic_hand_left"].position.z = 0.14;
-
-    // Right hand
-    models["robotic_hand_right"].rotation.x = -(Math.PI / 2);
-
-    models["robotic_hand_right"].position.x = 0.025;
-    models["robotic_hand_right"].position.y = -0.04;
-    models["robotic_hand_right"].position.z = 0.14;
 }

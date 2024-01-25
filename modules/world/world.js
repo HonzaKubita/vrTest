@@ -4,11 +4,12 @@ import * as CANNON from 'cannon-es';
 import * as physics from '../physics/physics';
 import * as render from '../render/render';
 
+import objects from './worldObjects';
+
 import WorldObject from './templates/worldObject';
 import Cube from './objects/cube';
 import Hand from './objects/hand';
 
-export let objects = [];
 
 // VR
 export let controller0 = null;
@@ -92,7 +93,7 @@ export function init() {
 
     // Create another cube
     const cube2Object = new Cube([0.5, 0.5, 0.5]);
-    cube2Object.cannonBody.position.set(0, 2, -2);
+    cube2Object.cannonBody.position.set(1, 2, -2);
     cube2Object.addToScene(render.scene);
     cube2Object.addToWorld(physics.world);
     objects.push(cube2Object);
