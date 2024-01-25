@@ -1,13 +1,13 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
-import PhysObject from "./physObject";
+import PhysObject from "../templates/physObject";
 
 export default class Cube extends PhysObject {
     constructor(size, staticObject=false) {
         // Create CANNON object
-        const cannonObject = new CANNON.Body({
+        const cannonBody = new CANNON.Body({
             // Calculate mass based on size
-            mass: staticObject ? 0 : (size[0] * size[1] * size[2] * 2),
+            mass: staticObject ? 0 : (size[0] * size[1] * size[2] * 1),
             // Calculate half extents based on size
             shape: new CANNON.Box(new CANNON.Vec3(...size.map((x) => x / 2))),
         });
@@ -25,6 +25,6 @@ export default class Cube extends PhysObject {
         mesh.receiveShadow = true;
 
         // Call super constructor
-        super(cannonObject, mesh);
+        super(cannonBody, mesh);
     }
 }

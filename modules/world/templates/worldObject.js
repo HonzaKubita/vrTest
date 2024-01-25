@@ -1,6 +1,6 @@
 export default class WorldObject {
-    constructor(cannonObject=null, threeMesh=null) {
-        this.cannonObject = cannonObject;
+    constructor(cannonBody=null, threeMesh=null) {
+        this.cannonBody = cannonBody;
         this.threeMesh = threeMesh;
     }
 
@@ -12,7 +12,7 @@ export default class WorldObject {
     }
 
     addToWorld(world) {
-        if (this.cannonObject)
-            world.addBody(this.cannonObject);
+        if (this.cannonBody)
+            world.addBody(this.cannonBody);
     }
 }

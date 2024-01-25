@@ -4,7 +4,7 @@ import * as CANNON from 'cannon-es';
 import * as physics from '../physics/physics';
 import * as render from '../render/render';
 
-import WorldObject from './worldObject';
+import WorldObject from './templates/worldObject';
 import Cube from './objects/cube';
 import Hand from './objects/hand';
 
@@ -42,13 +42,13 @@ function setupBaseObjects() {
     groundMesh.receiveShadow = true;
 
     // Ground - CANNON
-    const groundCANNONObject = new CANNON.Body({
+    const groundCANNONBody = new CANNON.Body({
         type: CANNON.Body.STATIC,
         shape: new CANNON.Plane(),
     });
-    groundCANNONObject.quaternion.setFromEuler(-Math.PI / 2, 0, 0) // make it face up
+    groundCANNONBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0) // make it face up
 
-    const groundObject = new WorldObject(groundCANNONObject, groundMesh);
+    const groundObject = new WorldObject(groundCANNONBody, groundMesh);
     groundObject.enableQuaternionCopy = false;
     groundObject.addToScene(render.scene);
     groundObject.addToWorld(physics.world);
@@ -78,21 +78,21 @@ export function init() {
 
     // Create table
     const tableObject = new Cube([1, 1, 1], true);
-    tableObject.cannonObject.position.set(0, 0, -2);
+    tableObject.cannonBody.position.set(0, 0, -2);
     tableObject.addToScene(render.scene);
     tableObject.addToWorld(physics.world);
     objects.push(tableObject);
 
     // Create cube
     const cubeObject = new Cube([0.2, 0.2, 0.2]);
-    cubeObject.cannonObject.position.set(0, 1, -2);
+    cubeObject.cannonBody.position.set(0, 1, -2);
     cubeObject.addToScene(render.scene);
     cubeObject.addToWorld(physics.world);
     objects.push(cubeObject);
 
     // Create another cube
     const cube2Object = new Cube([0.5, 0.5, 0.5]);
-    cube2Object.cannonObject.position.set(0, 2, -2);
+    cube2Object.cannonBody.position.set(0, 2, -2);
     cube2Object.addToScene(render.scene);
     cube2Object.addToWorld(physics.world);
     objects.push(cube2Object);
