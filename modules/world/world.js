@@ -9,6 +9,7 @@ import objects from './worldObjects';
 import WorldObject from './templates/worldObject';
 import Cube from './objects/cube';
 import Hand from './objects/hand';
+import Ball from './objects/ball';
 
 
 // VR
@@ -86,7 +87,7 @@ export function init() {
 
     // Create cube
     const cubeObject = new Cube([0.2, 0.2, 0.2]);
-    cubeObject.cannonBody.position.set(0, 1, -2);
+    cubeObject.cannonBody.position.set(-0.4, 1, -2);
     cubeObject.addToScene(render.scene);
     cubeObject.addToWorld(physics.world);
     objects.push(cubeObject);
@@ -97,6 +98,13 @@ export function init() {
     cube2Object.addToScene(render.scene);
     cube2Object.addToWorld(physics.world);
     objects.push(cube2Object);
+
+    // Create ball
+    const ballObject = new Ball(0.3);
+    ballObject.cannonBody.position.set(0.2, 3, -2);
+    ballObject.addToScene(render.scene);
+    ballObject.addToWorld(physics.world);
+    objects.push(ballObject);
 }
 
 export function update() {
