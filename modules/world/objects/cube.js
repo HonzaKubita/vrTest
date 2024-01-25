@@ -17,7 +17,7 @@ export default class Cube extends PhysObject {
         // Create three object
         const geometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
         const material = new THREE.MeshStandardMaterial({
-            map: textureLoader.load("/assets/textures/cube.jpeg"),
+            map: textureLoader.load("/assets/textures/cube2.png"),
         });
         const mesh = new THREE.Mesh(geometry, material);
 
@@ -28,5 +28,6 @@ export default class Cube extends PhysObject {
         super(cannonBody, mesh);
 
         this.isGrabbable = !staticObject;
+        this.grabRadius = size / 2;
     }
 }

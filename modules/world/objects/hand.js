@@ -44,7 +44,6 @@ export default class Hand extends WorldObject {
     }
 
     correctHandModel() {
-        console.log(render.models["hand"]);
         if (this.side == "left")
             render.models["hand"].applyMatrix4(new THREE.Matrix4().makeScale(-1, 1, 1));
 
@@ -179,7 +178,7 @@ export default class Hand extends WorldObject {
 
             console.log(distance);
 
-            if (distance > 0.3) continue; // Too far away
+            if (distance > 0.2 + object.grabDistance) continue; // Too far away
 
             if (distance < lastDistance) {
                 console.log("found grab candidate");
