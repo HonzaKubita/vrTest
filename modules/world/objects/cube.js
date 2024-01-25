@@ -1,17 +1,15 @@
 import * as THREE from "three";
-import * as physics from "../../physics/physics";
+import * as CANNON from "cannon-es";
 import WorldObject from "../worldObject";
 
 export default class Cube extends WorldObject {
-    constructor(size, position, quaternion, move=true) {
-        // Create oimo physics object
-        const oimoObject = physics.world.add({
-            type: "box",
-            size: size,
-            pos: position,
-            rot: quaternion,
-            move: move,
-            density: 1
+    constructor(size, staticObject=false) {
+        // Create CANNON object
+        const cannonObject = new CANNON.Body({
+            // Calculate mass based on size
+            mass: staticObject ? 0 : (size[0] * size[1] * size[2] * 2),
+            // Calculate half extents based on size
+            shape: new CANNON.Box(new CANNON.Vec3(...size.map((x) => x / 2))),
         });
 
         const textureLoader = new THREE.TextureLoader();
@@ -27,6 +25,6 @@ export default class Cube extends WorldObject {
         mesh.receiveShadow = true;
 
         // Call super constructor
-        super(oimoObject, mesh);
+        super(cannonObject, mesh);
     }
 }

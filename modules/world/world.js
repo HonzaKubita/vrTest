@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
 import * as physics from '../physics/physics';
 import * as render from '../render/render';
 import WorldObject from './worldObject';
@@ -38,43 +39,42 @@ function setupHands() {
     controller0.add(render.models["robotic_hand_left"]);
     controller1.add(render.models["robotic_hand_right"]);
 
-    // Create oimo physics objects for hands
-    const controllerLeftBox = new Cube([0.1, 0.1, 0.1], [0, 0, 0], [0, 0, 0, 1], false);
-    controllerLeftBox.positionController = "three";
-    controllerLeftBox.addToScene(controller0);
-    objects.push(controllerLeftBox);
+    // Create worldObjects for hands
+    // const controllerLeftBox = new Cube([0.1, 0.1, 0.1]);
+    // controllerLeftBox.addToScene(controller0);
+    // controllerLeftBox.addToWorld(physics.world);
+    // objects.push(controllerLeftBox);
 
-    const controllerRightBox = new Cube([0.1, 0.1, 0.1], [0, 0, 0], [0, 0, 0, 1], false);
-    controllerRightBox.positionController = "three";
-    controllerRightBox.addToScene(controller1);
-    objects.push(controllerRightBox);
+    // const controllerRightBox = new Cube([0.1, 0.1, 0.1]);
+    // controllerRightBox.addToScene(controller1);
+    // controllerRightBox.addToWorld(physics.world);
+    // objects.push(controllerRightBox);
 }
 
 function setupBaseObjects() {
     // Create starting objects
 
+    // Ground - THREE
     // Create ground with repeating texture (textures/ground.jpeg)
     const groundTexture = new THREE.TextureLoader().load('/assets/textures/ground.jpeg');
     groundTexture.wrapS = THREE.RepeatWrapping;
     groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set(100, 100);
     const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
-    const groundGeometry = new THREE.BoxGeometry(100, 0.1, 100);
+    const groundGeometry = new THREE.BoxGeometry(50, 0.1, 50);
     const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
     groundMesh.receiveShadow = true;
 
-    // Ground - oimo
-    const groundOimoObject = physics.world.add({
-        type: "box",
-        size: [100, 0.1, 100],
-        pos: [0, 0.1, 0],
-        rot: [0, 0, 0, 1],
-        move: false,
-        density: 5
+    // Ground - CANNON
+    const groundCANNONObject = new CANNON.Body({
+        type: CANNON.Body.STATIC,
+        shape: new CANNON.Plane(),
     });
+    groundCANNONObject.quaternion.setFromEuler(-Math.PI / 2, 0, 0) // make it face up
 
-    const groundObject = new WorldObject(groundOimoObject, groundMesh);
+    const groundObject = new WorldObject(groundCANNONObject, groundMesh);
     groundObject.addToScene(render.scene);
+    groundObject.addToWorld(physics.world);
 }
 
 function setupLights() {
@@ -93,8 +93,6 @@ function setupLights() {
     render.scene.add(directionalLight);
 }
 
-let tableCube = null;
-
 export function init() {
 
     setupHands();
@@ -102,19 +100,24 @@ export function init() {
     setupLights();
 
     // Create table
-    const tableObject = new Cube([1, 1, 1], [0, 0.2, -1], [0, 0, 0, 1], false);
-    tableCube = tableObject;
+    const tableObject = new Cube([1, 1, 1], true);
+    tableObject.cannonObject.position.set(0, 0, -2);
     tableObject.addToScene(render.scene);
+    tableObject.addToWorld(physics.world);
     objects.push(tableObject);
 
     // Create cube
-    const cubeObject = new Cube([0.2, 0.2, 0.2], [0, 2, -1], [0, 0, 0, 1], true);
+    const cubeObject = new Cube([0.2, 0.2, 0.2]);
+    cubeObject.cannonObject.position.set(0, 1, -2);
     cubeObject.addToScene(render.scene);
+    cubeObject.addToWorld(physics.world);
     objects.push(cubeObject);
 
     // Create another cube
-    const cube2Object = new Cube([0.5, 0.5, 0.5], [0, 4, -1], [0, 0, 0, 1], true);
+    const cube2Object = new Cube([0.5, 0.5, 0.5]);
+    cube2Object.cannonObject.position.set(0, 2, -2);
     cube2Object.addToScene(render.scene);
+    cube2Object.addToWorld(physics.world);
     objects.push(cube2Object);
 }
 

@@ -13,6 +13,7 @@
     "vite-plugin-mkcert": "^1.17.3"
   },
   "dependencies": {
+    "cannon-es": "^0.20.0",
     "three": "^0.160.1"
   }
 }
