@@ -9,5 +9,5 @@ export function init() {
 }
 
 export function update() {
-    world.fixedStep();
+    world.fixedStep(1/120);
 }
