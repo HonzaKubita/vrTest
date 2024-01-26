@@ -87,8 +87,8 @@ export default class Hand extends WorldObject {
             mass: 0,
             shape: new CANNON.Sphere(1),
         });
-        pointBody.collisionFilterGroup = 0
-        pointBody.collisionFilterMask = 0
+        pointBody.collisionFilterGroup = 0;
+        pointBody.collisionFilterMask = 0;
 
         // Create physObject for pointBody and hitboxPoint
         const hitboxPointObject = new PhysObject(pointBody, hitboxPointMesh, "three");
@@ -178,7 +178,7 @@ export default class Hand extends WorldObject {
 
             console.log(distance);
 
-            if (distance > 0.2 + object.grabDistance) continue; // Too far away
+            if (distance > (0.2 + object.grabDistance)) continue; // Too far away
 
             if (distance < lastDistance) {
                 console.log("found grab candidate");
