@@ -11,6 +11,8 @@ import Cube from './objects/cube';
 import Hand from './objects/hand';
 import Ball from './objects/ball';
 
+import Mug from './objects/mug';
+
 
 // VR
 export let controller0 = null;
@@ -105,6 +107,13 @@ export function init() {
     ballObject.addToScene(render.scene);
     ballObject.addToWorld(physics.world);
     objects.push(ballObject);
+
+    // Create mug
+    const mugObject = new Mug();
+    mugObject.cannonBody.position.set(0, 1, -1.6);
+    mugObject.addToScene(render.scene);
+    mugObject.addToWorld(physics.world);
+    objects.push(mugObject);
 }
 
 export function update() {

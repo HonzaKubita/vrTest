@@ -4,6 +4,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const models = {
     "hand": "/assets/models/hand.glb",
     "hand2": "/assets/models/hand.glb",
+
+    "mug": "/assets/models/mug.glb",
 }
 
 const loader = new GLTFLoader();
