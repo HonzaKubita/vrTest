@@ -9,8 +9,9 @@ export default class Mug extends SimpleCustomObject {
 
         // Create CANNON body
         const mugCannonBody = new CANNON.Body({
-            mass: 0.3,
-            shape: new CANNON.Cylinder(0.05, 0.05, 0.14, 32),
+            mass: 0.1,
+            shape: new CANNON.Cylinder(0.055, 0.055, 0.14, 32),
+            material: new CANNON.Material({ friction: 0.2 }),
         });
 
         super(mugModel, mugCannonBody);

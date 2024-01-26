@@ -10,6 +10,7 @@ import WorldObject from './templates/worldObject';
 import Cube from './objects/cube';
 import Hand from './objects/hand';
 import Ball from './objects/ball';
+import Wall from './objects/wall';
 
 import Mug from './objects/mug';
 
@@ -38,7 +39,7 @@ function setupBaseObjects() {
     const groundTexture = new THREE.TextureLoader().load('/assets/textures/ground.jpeg');
     groundTexture.wrapS = THREE.RepeatWrapping;
     groundTexture.wrapT = THREE.RepeatWrapping;
-    groundTexture.repeat.set(100, 100);
+    groundTexture.repeat.set(50, 50);
     const groundMaterial = new THREE.MeshStandardMaterial({ map: groundTexture });
     const groundGeometry = new THREE.PlaneGeometry(50, 50);
     const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -82,38 +83,45 @@ export function init() {
 
     // Create table
     const tableObject = new Cube([1, 1, 1], true);
-    tableObject.cannonBody.position.set(0, 0, -2);
+    tableObject.cannonBody.position.set(0, 0, -0.8);
     tableObject.addToScene(render.scene);
     tableObject.addToWorld(physics.world);
     objects.push(tableObject);
 
     // Create cube
     const cubeObject = new Cube([0.2, 0.2, 0.2]);
-    cubeObject.cannonBody.position.set(-0.4, 1, -2);
+    cubeObject.cannonBody.position.set(-0.4, 1, -0.8);
     cubeObject.addToScene(render.scene);
     cubeObject.addToWorld(physics.world);
     objects.push(cubeObject);
 
     // Create another cube
     const cube2Object = new Cube([0.5, 0.5, 0.5]);
-    cube2Object.cannonBody.position.set(1, 2, -2);
+    cube2Object.cannonBody.position.set(1, 2, -0.8);
     cube2Object.addToScene(render.scene);
     cube2Object.addToWorld(physics.world);
     objects.push(cube2Object);
 
     // Create ball
     const ballObject = new Ball(0.3);
-    ballObject.cannonBody.position.set(0.2, 3, -2);
+    ballObject.cannonBody.position.set(0.2, 3, -0.8);
     ballObject.addToScene(render.scene);
     ballObject.addToWorld(physics.world);
     objects.push(ballObject);
 
     // Create mug
     const mugObject = new Mug();
-    mugObject.cannonBody.position.set(0, 1, -1.6);
+    mugObject.cannonBody.position.set(-0.4, 1.5, -0.8);
     mugObject.addToScene(render.scene);
     mugObject.addToWorld(physics.world);
     objects.push(mugObject);
+
+    // Create wall (cube)
+    const wallObject = new Wall([1, 8, 10], true);
+    wallObject.cannonBody.position.set(5, 2, -0.8);
+    wallObject.addToScene(render.scene);
+    wallObject.addToWorld(physics.world);
+    objects.push(wallObject);
 }
 
 export function update() {

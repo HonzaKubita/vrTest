@@ -15,7 +15,7 @@ export default class Cube extends PhysObject {
         });
 
         // Create three object
-        const cubeTexture = new THREE.TextureLoader().load('/assets/textures/cube.jpeg');
+        const cubeTexture = new THREE.TextureLoader().load('/assets/textures/wall.png');
         const geometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
         const material = new THREE.MeshStandardMaterial({
             map: cubeTexture,

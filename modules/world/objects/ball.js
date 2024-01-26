@@ -10,6 +10,7 @@ export default class Ball extends PhysObject {
             mass: staticObject ? 0 : (radius * 1),
             // Calculate half extents based on size
             shape: new CANNON.Sphere(radius),
+            material: new CANNON.Material({ friction: 10, restitution: 4 }),
         });
 
         const textureLoader = new THREE.TextureLoader();
