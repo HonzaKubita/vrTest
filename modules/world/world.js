@@ -50,6 +50,7 @@ function setupBaseObjects() {
     const groundCANNONBody = new CANNON.Body({
         type: CANNON.Body.STATIC,
         shape: new CANNON.Plane(),
+        material: new CANNON.Material({ friction: 0.2, restitution: 0.2}),
     });
     groundCANNONBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0) // make it face up
 
