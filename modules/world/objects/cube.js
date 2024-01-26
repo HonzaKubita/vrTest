@@ -28,6 +28,6 @@ export default class Cube extends PhysObject {
         super(cannonBody, mesh);
 
         this.isGrabbable = !staticObject;
-        this.grabRadius = size / 2;
+        this.grabDistance = size[0] / 2;
     }
 }
