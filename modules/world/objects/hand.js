@@ -2,7 +2,7 @@ import * as CANNON from "cannon-es";
 import * as THREE from "three";
 import * as render from "../../render/render";
 import * as physics from "../../physics/physics";
-import objects from "../worldObjects";
+import { objects, getObjectByThree } from "../worldObjects";
 import WorldObject from "../templates/worldObject";
 import PhysObject from "../templates/physObject";
 
@@ -23,13 +23,27 @@ export default class Hand extends WorldObject {
 
         // Add hand models to controllers
         if (this.side == "left") 
-            this.controller.add(render.models["hand"]);
-        else if (this.side == "right")
-            this.controller.add(render.models["hand2"]);
+            this.handModel = render.models["hand"]
+        else if (this.side == "right") 
+            this.handModel = render.models["hand2"]
+    
+        this.controller.add(this.handModel);
         
         this.correctHandModel();
         this.createHitbox();
         this.createGrabPoint();
+
+        // Create raycaster for seeing what the controller is pointing at
+        this.raycaster = new THREE.Raycaster();
+        // Raycaster visual
+        const raycasterGeometry = new THREE.CylinderGeometry(0.003, 0.003, 100, 32);
+        const raycasterMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        this.raycasterMesh = new THREE.Mesh(raycasterGeometry, raycasterMaterial);
+        this.raycasterMesh.rotation.x = Math.PI / 2;
+        this.raycasterMesh.position.z = -50;
+        this.raycasterMesh.visible = false;
+        
+        this.controller.add(this.raycasterMesh);
 
         // Register event listeners for grabbing
         this.controller.addEventListener("selectstart", (event) => {
@@ -188,24 +202,97 @@ export default class Hand extends WorldObject {
             }
         }
 
-        if (!foundObject) {
-            console.log("no object to grab");
+        if (foundObject) {
+            console.log(`grabbing: `, toGrab);
+
+            // Create constraint between grabPointBody and toGrab
+            const constraint = new CANNON.LockConstraint(this.grabPoint.grabPointObject.cannonBody, toGrab.cannonBody);
+            physics.world.addConstraint(constraint);
+            this.grabPoint.grabPointConstraint = constraint;
+
             return;
-        };
+        }
 
-        console.log(`grabbing: `, toGrab);
+        console.log("no object to grab");
 
-        // Create constraint between grabPointBody and toGrab
-        const constraint = new CANNON.LockConstraint(this.grabPoint.grabPointObject.cannonBody, toGrab.cannonBody);
-        physics.world.addConstraint(constraint);
-        this.grabPoint.grabPointConstraint = constraint;
+        // Finding object to throw to player
+        console.log("finding object to throw to player");
+        // use raycaster to find object to throw to player
+        this.raycaster.set(
+            this.controller.getWorldPosition(new THREE.Vector3()), 
+            new THREE.Vector3(0, 0, -1).applyQuaternion(this.controller.getWorldQuaternion(new THREE.Quaternion()))
+        );
+
+        // Display raycaster
+        this.raycasterMesh.visible = true;
+    
+        const intersects = this.raycaster.intersectObjects(render.scene.children, false);
+        
+        console.log("Intersects: ", intersects);
+
+        // Filter out objects that are not in the world
+        const worldThreeObjects = intersects.filter((intersect) => getObjectByThree(intersect.object) ? true : false);
+        console.log("World Three objects: ", worldThreeObjects);
+        // Map three objects to world objects
+        const worldObjects = worldThreeObjects.map((intersect) => getObjectByThree(intersect.object));
+        console.log("World objects: ", worldObjects);
+        // Filter out objects that are not grabbable
+        const throwableObjects = worldObjects.filter((object) => object.isGrabbable);
+        console.log("Throwable objects: ", throwableObjects);
+
+        if (throwableObjects.length > 0) {
+            console.log("found object to throw to player");
+            const objectToThrow = throwableObjects[0];
+            console.log("Throwing: ", objectToThrow);
+
+            // Calculate velocity to throw object in a curve
+            const gravity = Math.abs(physics.world.gravity.y);
+            console.log("Gravity: ", gravity);
+
+            const objectToThrowPosition = new THREE.Vector3(
+                objectToThrow.cannonBody.position.x,
+                objectToThrow.cannonBody.position.y,
+                objectToThrow.cannonBody.position.z
+            );
+            const objectToThrowVelocity = new THREE.Vector3(
+                objectToThrow.cannonBody.velocity.x,
+                objectToThrow.cannonBody.velocity.y,
+                objectToThrow.cannonBody.velocity.z
+            );
+            const objectToThrowMass = objectToThrow.cannonBody.mass;
+
+            const handPosition = this.controller.getWorldPosition(new THREE.Vector3());
+
+            const neededForce = new THREE.Vector3(0, 0, 0);
+
+            const neededForceX = (handPosition.x - objectToThrowPosition.x) * (objectToThrowMass);
+            const neededForceY = (handPosition.y - objectToThrowPosition.y) * (objectToThrowMass * gravity);
+            const neededForceZ = (handPosition.z - objectToThrowPosition.z) * (objectToThrowMass);
+
+            neededForce.x = neededForceX;
+            neededForce.y = neededForceY + 1.5;
+            neededForce.z = neededForceZ;
+
+            objectToThrow.cannonBody.applyImpulse(new CANNON.Vec3(neededForce.x, neededForce.y, neededForce.z), new CANNON.Vec3(0, 0, 0));
+            
+            return;
+        }
+
+        console.log("No object to throw to player");
     }
 
     onRelease() {
         console.log("release");
+
         this.grabbing = false;
-        physics.world.removeConstraint(this.grabPoint.grabPointConstraint);
-        this.grabPoint.grabPointConstraint = null;
+        // Remove constraint between grabPointBody and toGrab if it exists
+        if (this.grabPoint.grabPointConstraint) {
+            physics.world.removeConstraint(this.grabPoint.grabPointConstraint);
+            this.grabPoint.grabPointConstraint = null;
+        }
+
+        // Hide raycaster
+        this.raycasterMesh.visible = false;
     }
 
     debug() {

@@ -4,7 +4,7 @@ import * as CANNON from 'cannon-es';
 import * as physics from '../physics/physics';
 import * as render from '../render/render';
 
-import objects from './worldObjects';
+import { objects } from './worldObjects';
 
 import WorldObject from './templates/worldObject';
 import Cube from './objects/cube';
@@ -103,12 +103,26 @@ export function init() {
     cube2Object.addToWorld(physics.world);
     objects.push(cube2Object);
 
+    // Create another cube
+    const cube3Object = new Cube([0.5, 0.5, 0.5]);
+    cube3Object.cannonBody.position.set(1, 2.5, -0.8);
+    cube3Object.addToScene(render.scene);
+    cube3Object.addToWorld(physics.world);
+    objects.push(cube3Object);
+
     // Create ball
-    const ballObject = new Ball(0.3);
-    ballObject.cannonBody.position.set(0.2, 3, -0.8);
+    const ballObject = new Ball(0.1);
+    ballObject.cannonBody.position.set(0.2, 3, -0.9);
     ballObject.addToScene(render.scene);
     ballObject.addToWorld(physics.world);
     objects.push(ballObject);
+
+    // Create ball
+    const ballObject2 = new Ball(0.1);
+    ballObject2.cannonBody.position.set(0.1, 2, -0.5);
+    ballObject2.addToScene(render.scene);
+    ballObject2.addToWorld(physics.world);
+    objects.push(ballObject2);
 
     // Create mug
     const mugObject = new Mug();
