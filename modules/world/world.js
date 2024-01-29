@@ -110,6 +110,13 @@ export function init() {
     cube3Object.addToWorld(physics.world);
     objects.push(cube3Object);
 
+    // Create cube that is far
+    const cube4Object = new Cube([0.5, 0.5, 0.5]);
+    cube4Object.cannonBody.position.set(1, 2, -5);
+    cube4Object.addToScene(render.scene);
+    cube4Object.addToWorld(physics.world);
+    objects.push(cube4Object);
+
     // Create ball
     const ballObject = new Ball(0.1);
     ballObject.cannonBody.position.set(0.2, 3, -0.9);
