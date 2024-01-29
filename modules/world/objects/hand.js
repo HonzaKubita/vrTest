@@ -263,17 +263,39 @@ export default class Hand extends WorldObject {
 
             const handPosition = this.controller.getWorldPosition(new THREE.Vector3());
 
-            const neededForce = new THREE.Vector3(0, 0, 0);
+            const heightAdd = 0.5;
 
-            const neededForceX = (handPosition.x - objectToThrowPosition.x) * (objectToThrowMass);
-            const neededForceY = (handPosition.y - objectToThrowPosition.y) * (objectToThrowMass * gravity);
-            const neededForceZ = (handPosition.z - objectToThrowPosition.z) * (objectToThrowMass);
+            const highestObject = Math.max(objectToThrowPosition.y, handPosition.y);
+            const curveHeight = highestObject + heightAdd;
+            console.log("Curve height: ", curveHeight);
 
-            neededForce.x = neededForceX;
-            neededForce.y = neededForceY + 1.5;
-            neededForce.z = neededForceZ;
+            // 2D calculation
+            const velocityY = Math.sqrt(2 * gravity * curveHeight);
 
-            objectToThrow.cannonBody.applyImpulse(new CANNON.Vec3(neededForce.x, neededForce.y, neededForce.z), new CANNON.Vec3(0, 0, 0));
+            const timeUp = velocityY / gravity;
+            const timeDown = Math.sqrt((2 * heightAdd) / gravity);
+            const timeTotal = timeUp + timeDown;
+
+            // Calculate 2D distance between hand and object
+            const distance = Math.sqrt(
+                Math.pow(handPosition.x - objectToThrowPosition.x, 2) +
+                Math.pow(handPosition.z - objectToThrowPosition.z, 2)
+            );
+
+            const velocityX2D = distance / timeTotal;
+
+            // Decompose velocityXD into x and z components
+            // Get the direction of the vector we want to decompose
+            const direction = new THREE.Vector3(
+                handPosition.x - objectToThrowPosition.x,
+                0,
+                handPosition.z - objectToThrowPosition.z
+            ).normalize();
+
+            const velocityX = velocityX2D * direction.x;
+            const velocityZ = velocityX2D * direction.z;
+
+            objectToThrow.cannonBody.velocity = new CANNON.Vec3(velocityX, velocityY, velocityZ);
             
             return;
         }
